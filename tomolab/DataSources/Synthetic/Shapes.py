@@ -27,7 +27,8 @@ def uniform_sphere(
 ):
     """Create volume (3D numpy array) with uniform value within a spherical region. """
     return Image3D(
-        ET_spherical_phantom(shape, size, center, radius, inner_value, outer_value)
+        data=ET_spherical_phantom(shape, size, center, radius, inner_value, outer_value),
+        space="world"
     )
 
 
@@ -43,9 +44,10 @@ def uniform_cylinder(
 ):
     """Create volume (3D numpy array) with uniform value within a spherical region. """
     return Image3D(
-        ET_cylindrical_phantom(
+        data=ET_cylindrical_phantom(
             shape, size, center, radius, length, axis, inner_value, outer_value
-        )
+        ),
+        space="world"
     )
 
 
@@ -64,7 +66,7 @@ def uniform_spheres_ring(
 ):
     """Create volume (3D numpy array) with uniform value within a spherical region. """
     return Image3D(
-        ET_spheres_ring_phantom(
+        data=ET_spheres_ring_phantom(
             shape,
             size,
             center,
@@ -76,7 +78,8 @@ def uniform_spheres_ring(
             outer_value,
             taper,
             axis,
-        )
+        ),
+        space="world"
     )
 
 def uniform_cylinders_ring(
@@ -95,7 +98,7 @@ def uniform_cylinders_ring(
 ):
     """Create volume (3D numpy array) with uniform value within a spherical region. """
     return Image3D(
-        ET_cylinders_ring_phantom(
+        data=ET_cylinders_ring_phantom(
             shape,
             size,
             center,
@@ -108,7 +111,8 @@ def uniform_cylinders_ring(
             outer_value,
             taper,
             axis,
-        )
+        ),
+        space="world"
     )
 
 def complex_phantom(

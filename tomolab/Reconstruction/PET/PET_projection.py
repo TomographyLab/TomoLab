@@ -29,7 +29,9 @@ from tomolab.Core.NiftyRec import  PET_compress_projection, \
                                     PET_get_subset_sparsity, PET_compress_projection_array, \
                                     PET_get_subset_projection_array
 from tomolab.Core.Print import rad_to_deg, array_to_string
-from tomolab.Visualization.Visualization import TriplanarView, VolumeRenderer, TriplanarViewInteractive
+from tomolab.Visualization.Visualization import TriplanarView, VolumeRenderer, TriplanarViewInteractive, \
+                                                ProgressBar
+from tomolab.Visualization.DisplayNode.DisplayNodeProxy import DisplayNode
 from tomolab.global_settings import ipy_table, has_ipy_table,svgwrite, has_svgwrite
 
 __all__ = ["DEFAULT_BINNING", "Binning", "PET_Projection_Sparsity", "PET_Projection",
@@ -663,7 +665,7 @@ class PET_Projection:
             else:
                 a = scale * 255.0 * (a) / (a.max() + 1e-12)
         im = Image.fromarray(a).convert("RGB")
-        return im.rotate(90)
+        return im.rotate(90, expand=True)
 
     def to_nd_array(self):
         """Uncompress (if compressed) and convert into an nd array. """
@@ -696,19 +698,18 @@ class PET_Projection:
     '''
     def _display_in_browser_legacy(self, axial=True, azimuthal=False, index=0, scale=None):
         self.display(axial=axial, azimuthal=azimuthal, index=index, scale=scale, open_browser=True)
+    '''
 
-    #TODO check if feasible to make DisplayNode working again
-    def _display_legacy(self, axial=True, azimuthal=None, index=0, scale=None, open_browser=False):
+    def quick_render(self, axial=True, azimuthal=None, index=0, scale=None, open_browser=False):
         """If 'axial' is set to True, then it displays projections along the axial direction,
         with azimuthal index given by 'index'.
         If 'axial' is set to False, then it displays projections along the azimuthal direction,
         with axial index given by 'index'. """
         data = self.to_nd_array()
         binning = self.get_binning()
-        d = DisplayNode
+        d = DisplayNode()
         images = []
-        progress_bar = ProgressBar(height='6px', width='100%%',
-                                   background_color=col.LIGHT_GRAY, foreground_color=col.GRAY)
+        progress_bar = ProgressBar()
         if scale is not None:
             scale = scale * 255.0 / (data.max() + 1e-12)
         else:
@@ -738,8 +739,8 @@ class PET_Projection:
                 images.append(images_az)
                 progress_bar.set_percentage(i * 100.0 / self.sparsity.N_axial)
         progress_bar.set_percentage(100.0)
+
         return d.display('tipix', images, open_browser)
-    '''
 
     def volume_render(self, azim = None, res = (1.0,1.0,1.0), crop=None, autotranspose=False):
         if azim is None:
@@ -749,7 +750,7 @@ class PET_Projection:
 
     def _repr_html_(self):
         self.display()
-        return ''
+        return
 
     ####################################################################################################################
 

@@ -10,6 +10,7 @@ __all__ = ['load_dicom', 'load_dicom_series']
 import os
 import pydicom
 import numpy as np
+import dicom2nifti
 
 try:
     import dcmstack
@@ -21,6 +22,8 @@ from glob import glob
 
 from ...Core.Conversion import nipy2occiput
 from ...Visualization.Visualization import ProgressBar
+from ...Visualization import Colors as C
+from .nifti import load_nifti
 
 ##############################################################################
 # We need to override this method of dcmstack class
@@ -81,7 +84,42 @@ if dcmstack_available:
 ##############################################################################
 
 
-def load_dicom(search_path, extension='IMA'):
+def load_dicom(search_path):
+    try:
+        nii = dicom2nifti.dicom_series_to_nifti(
+            original_dicom_directory=search_path,
+            output_file=os.path.join(search_path, 'niftivol.nii'),
+            reorient_nifti=True,
+        )
+        return load_nifti(nii['NII_FILE'])
+    except:
+        return None
+
+def load_dicom_series(path):
+    return load_dicom(path)
+
+
+def load_multiple_dicom_series(dirlist=[]):
+    dataset = {}
+    progress_bar = ProgressBar(title='Reading src', color=C.LIGHT_RED)
+    progress_bar.set_percentage(0.1)
+    for k,directory in enumerate(dirlist):
+        print(directory)
+        vol = load_dicom(directory)
+        if not vol==[]:
+            keys = directory.split('/')
+            if keys[-2] in dataset.keys():
+                dataset[keys[-2]][keys[-1]] = vol
+            else:
+                dataset[keys[-2]] = {}
+                dataset[keys[-2]][keys[-1]] = vol
+        progress_bar.set_percentage((k + 1) * 100.0 / len(dirlist))
+    progress_bar.set_percentage(100.0)
+    return dataset
+
+
+
+def load_dicom_old(search_path, extension='IMA'):
     progress_bar = ProgressBar(title='Reading src')
     progress_bar.set_percentage(0.1)
     if (not dcmstack_available):
@@ -101,7 +139,7 @@ def load_dicom(search_path, extension='IMA'):
         return images
 
 
-def load_dicom_series(path, files_start_with=None, files_end_with=None,
+def load_dicom_series_old(path, files_start_with=None, files_end_with=None,
                       exclude_files_end_with=('.dat', '.txt', '.py', '.pyc', '.nii', '.gz')):
     """Rudimentary file to load_interfile dicom serie from a directory. """
     N = 0

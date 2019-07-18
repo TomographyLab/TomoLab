@@ -6,13 +6,13 @@
 
 __all__ = ['guess_file_type_by_name',
            'load_nifti',
-           'load_dicom', 'load_dicom_series',
+           'load_dicom', 'load_dicom_series','load_multiple_dicom_series',
            'load_mask', 'load_freesurfer_lut_file',
            'download_Dropbox',
            'load_interfile', ]
 
 
-from .dicom import load_dicom_series, load_dicom
+from .dicom import load_dicom_series, load_dicom, load_multiple_dicom_series
 from .nifti import load_nifti
 from .freesurfer import load_mask, load_freesurfer_lut_file
 from .web import download_Dropbox

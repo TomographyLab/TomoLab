@@ -214,3 +214,5 @@ class Michelogram:
 
     def _repr_svg_(self):
         return self._svg_string
+
+

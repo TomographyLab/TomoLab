@@ -8,8 +8,9 @@
 import nibabel
 from .DataStructures import Image3D, ImageND
 from nipy.io.nifti_ref import nifti2nipy
+import numpy as np
 
-
+'''
 def nifti2occiput(nif):
     """Convert Nifti image to occiput ImageND image.
 
@@ -21,6 +22,7 @@ def nifti2occiput(nif):
         """
     nip = nifti2nipy(nif)
     return nipy2occiput(nip)
+'''
 
 def nipy2occiput(nib):
     """Convert nipy image to Occiput ImageND image.
@@ -31,13 +33,15 @@ def nipy2occiput(nib):
         Returns:
             ImageND: occiput image. """
     ndim = len(nib.shape)
+    affine = nib.affine
+    #affine[:,-1] = np.asarray([0.0,0.0,0.0,1.0]) #TODO: check if it's legit
     if ndim == 3:
         im = Image3D(
-            data=nib.get_data(), affine=nib.affine,
+            data=nib.get_data(), affine=affine,
             space="world", header=nib.header)
     else:
         im = ImageND(
-            data=nib.get_data(), affine=nib.affine,
+            data=nib.get_data(), affine=affine,
             space="world", header=nib.header)
     return im
 

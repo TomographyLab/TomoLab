@@ -15,12 +15,14 @@ import uuid
 import scipy.ndimage
 import matplotlib.pyplot as plt
 from IPython.display import HTML, display
-from ipywidgets import interact, fixed, IntSlider, FloatProgress, FloatRangeSlider
+from ipywidgets import interact, fixed, IntSlider, FloatProgress, FloatRangeSlider, Layout
 import ipyvolume as ipv
 import json
-from skimage.transform import resize, rescale
+from skimage.transform import rescale
 from . import Colors as C
 from ..global_settings import is_PET_Projection,is_ImageND, is_in_ipynb
+from PIL import Image
+from .DisplayNode.DisplayNodeProxy import DisplayNode
 
 #################################################à
 
@@ -46,6 +48,8 @@ def pad_and_crop(volume, res = (1.0,1.0,1.0), crop=None):
         start = x//2-(crop//2)
         new_volume = new_volume[start:start+crop,start:start+crop,start:start+crop]
     return new_volume
+
+
 
 class ProgressBar():
     def __init__(self, color=C.BLUE, title="Processing:"):
@@ -77,6 +81,7 @@ class ProgressBar():
             description=title,
             bar_style=color_style,
             orientation='horizontal',
+            layout=Layout(padding='0px 0px 0px 10px', width='100%', height='20px')
         )
         self._pb.style.description_width = 'initial'
         self._pb.layout.border='solid 1px'
@@ -520,18 +525,18 @@ class TriplanarViewInteractive:
             # append to image handles
             self.image_handles.append(im)
 
-'''
+
 class MultipleVolumes:
-    def __init__(
-            self,
-            volumes,
-            axis=0,
-            shrink=256,
-            rotate=90,
-            subsample_slices=None,
-            scales=None,
-            open_browser=None,
-    ):
+    def __init__(self,
+                 volumes,
+                 axis=0,
+                 shrink=256,
+                 rotate=90,
+                 scales=None,
+                 subsample_slices=None,
+                 crop=None,
+                 open_browser=None):
+
         self.volumes = volumes
         self._axis = axis
         self._shrink = shrink
@@ -539,187 +544,8 @@ class MultipleVolumes:
         self._subsample_slices = subsample_slices
         self._scales = scales
         self._open_browser = open_browser
-        self._progress_bar = ProgressBar(
-            height="6px",
-            width="100%%",
-            background_color=C.LIGHT_GRAY,
-            foreground_color=C.GRAY,
-        )
-
-    def get_data(self, volume_index):
-        volume = self.volumes[volume_index]
-        if isinstance(volume, np.ndarray):
-            return volume
-        else:
-            # Volume type
-            return volume.data
-
-    def get_shape(self, volume_index):
-        return self.volumes[volume_index].shape
-
-    def export_image(
-            self,
-            volume_index,
-            slice_index,
-            axis=0,
-            normalise=True,
-            scale=None,
-            shrink=None,
-            rotate=0,
-            global_scale=True,
-    ):
-        # FIXME: handle 4D, 5D, ..
-
-        M = self.get_data(volume_index).max()
-        m = self.get_data(volume_index).min()
-
-        if axis == 0:
-            a = np.float32(
-                self.get_data(volume_index)[slice_index, :, :].reshape(
-                    (self.get_shape(volume_index)[1], self.get_shape(volume_index)[2])
-                )
-            )
-        elif axis == 1:
-            a = np.float32(
-                self.get_data(volume_index)[:, slice_index, :].reshape(
-                    (self.get_shape(volume_index)[0], self.get_shape(volume_index)[2])
-                )
-            )
-        else:
-            a = np.float32(
-                self.get_data(volume_index)[:, :, slice_index].reshape(
-                    (self.get_shape(volume_index)[0], self.get_shape(volume_index)[1])
-                )
-            )
-
-        if m >= 0:
-            if normalise:
-                if not global_scale:
-                    if scale is None:
-                        a = a * 255 / (a.max() + 1e-9)
-                    else:
-                        a = a * scale * 255 / (a.max() + 1e-9)
-                else:
-                    if scale is None:
-                        a = a * 255 / (M + 1e-9)
-                    else:
-                        a = a * scale * 255 / (M + 1e-9)
-            im = Image.fromarray(a).convert("RGB")
-        else:
-            if normalise:
-                if not global_scale:
-                    if scale is None:
-                        a = a * 512 / (a.max() - a.min() + 1e-9)
-                    else:
-                        a = a * scale * 512 / (a.max() - a.min() + 1e-9)
-                else:
-                    if scale is None:
-                        a = a * 512 / (M - m + 1e-9)
-                    else:
-                        a = a * scale * 512 / (M - m + 1e-9)
-            blue = a
-            red = a.copy()
-            red[np.where(red >= 0)] = 0
-            red = -red
-            blue[np.where(blue < 0)] = 0
-            green = np.zeros(red.shape)
-            rgb = np.zeros((red.shape[0], red.shape[1], 3), dtype=np.uint8)
-            rgb[:, :, 0] = red
-            rgb[:, :, 1] = green
-            rgb[:, :, 2] = blue
-            im = Image.fromarray(rgb, mode="RGB")
-        if shrink is not None:
-            # scale in order to make the largest dimension equal to 'shrink'
-            shrink = int(shrink)
-            (h, w) = im.size
-            # FIXME: downsample the volume (with the GPU, if available) before converting to images, it will save a lot of time, conversion to Image and to RGB is slow
-            if h > shrink or w > shrink:
-                if h > w:
-                    im = im.resize((shrink, int(shrink * w / (1.0 * h))))
-                else:
-                    im = im.resize((int(shrink * h / (1.0 * w)), shrink))
-        if rotate is not None:
-            im = im.rotate(rotate)
-        return im
-
-    # display
-    def display_in_browser(
-            self, axis=None, shrink=None, rotate=None, subsample_slices=None, scales=None
-    ):
-        self.display(axis, shrink, rotate, subsample_slices, scales, open_browser=True)
-
-    def display(
-            self,
-            axis=None,
-            shrink=None,
-            rotate=None,
-            subsample_slices=None,
-            scales=None,
-            open_browser=None,
-    ):
-        if axis is None:
-            axis = self._axis
-        if shrink is None:
-            shrink = self._shrink
-        if rotate is None:
-            rotate = self._rotate
-        if subsample_slices is None:
-            subsample_slices = self._subsample_slices
-        if subsample_slices is None:
-            subsample_slices = 1
-        if scales is None:
-            scales = self._scales
-        if open_browser is None:
-            open_browser = self._open_browser
-        if open_browser is None:
-            open_browser = False
-        D = DisplayNode()
-        images = []
-        n = 0
-
-        N_slices = 0
-        for j in range(len(self.volumes)):
-            N_slices += self.get_shape(j)[axis]
-        self._progress_bar = ProgressBar(
-            height="6px",
-            width="100%%",
-            background_color=C.LIGHT_GRAY,
-            foreground_color=C.GRAY,
-        )
-
-        for j in range(len(self.volumes)):
-            if scales is None:
-                scale = 255 / (self.get_data(j).max() + 1e-9)
-            else:
-                scale = scales[j] * 255 / (self.get_data(j).max() + 1e-9)
-            images_inner = []
-            for i in range(0, self.get_shape(j)[axis], subsample_slices):
-                im = self.export_image(
-                    j, i, axis, normalise=True, scale=scale, shrink=shrink, rotate=rotate
-                )
-                images_inner.append(im)
-                n += 1
-                self._progress_bar.set_percentage(
-                    n * 100.0 / N_slices * subsample_slices
-                )
-                images.append(images_inner)
-        return D.display("tipix", images, open_browser)
-
-    def _repr_html_(self):
-        return self.display()._repr_html_()
-'''
-'''
-class MultipleVolumesNiftyPy:
-    def __init__(self, volumes, axis=0, open_browser=None):
-        self.volumes = volumes
-        self._axis = axis
-        self._open_browser = open_browser
-        self._progress_bar = ProgressBar(
-            height="6px",
-            width="100%%",
-            background_color=C.LIGHT_GRAY,
-            foreground_color=C.GRAY,
-        )
+        self._progress_bar = ProgressBar(color = C.LIGHT_BLUE)
+        self._crop = crop
 
     def get_data(self, volume_index):
         volume = self.volumes[volume_index]
@@ -732,28 +558,46 @@ class MultipleVolumesNiftyPy:
     def get_shape(self, volume_index):
         return self.volumes[volume_index].shape
 
-    def _resample_volume(self):
-        pass
-
     # display
     def display_in_browser(self, axis=None, max_size=200):
         self.display(axis, max_size, open_browser=True)
 
-    def display(self, axis=None, max_size=256, open_browser=None):
+    def display(self,
+                axis=None,
+                shrink=None,
+                rotate=None,
+                subsample_slices=None,
+                scales=None,
+                fusion=False,
+                normalize=True,
+                crop=None,
+                global_scale=False,
+                open_browser=None):
+
         if axis is None:
             axis = self._axis
+        if shrink is None:
+            shrink = self._shrink
+        if shrink is None:
+            shrink = np.asarray(self.volumes[0].shape).max()
+        if rotate is None:
+            rotate = self._rotate
+        if subsample_slices is None:
+            subsample_slices = self._subsample_slices
+        if subsample_slices is None:
+            subsample_slices = 1
+        if crop is None:
+            crop = self._crop
+        if scales is None:
+            scales = self._scales
         if open_browser is None:
             open_browser = self._open_browser
         if open_browser is None:
             open_browser = False
+
         D = DisplayNode()
 
-        self._progress_bar = ProgressBar(
-            height="6px",
-            width="100%%",
-            background_color=C.LIGHT_GRAY,
-            foreground_color=C.GRAY,
-        )
+        self._progress_bar = ProgressBar()
 
         volume = self.volumes[0]  # FIXME: optionally use other grid
         # make grid of regularly-spaced points
@@ -761,46 +605,159 @@ class MultipleVolumesNiftyPy:
         box_max = volume.get_world_grid_max()
         span = box_max - box_min
         max_span = span.max()
-        n_points = np.uint32(span / max_span * max_size)
+        n_points = np.uint32(span / max_span * shrink)
         grid = volume.get_world_grid(n_points)
         n = 0
         images = []
-        for index in range(len(self.volumes)):
-            volume = self.volumes[index]
-            resampled = volume.compute_resample_on_grid(grid).data
-            self._resampled = resampled
-            sequence = []
+
+        if len(self.volumes) == 2 and fusion == True:
+            resampleds = [self.volumes[0].compute_resample_on_grid(grid).data,
+                          self.volumes[1].compute_resample_on_grid(grid).data]
+            rgb = None
+
             for slice_index in range(n_points[axis]):
-                if axis == 0:
-                    a = np.float32(
-                        resampled[slice_index, :, :].reshape(
-                            (resampled.shape[1], resampled.shape[2])
+                sequence = []
+                for index, resampled in enumerate(resampleds):
+                    M = resampled.max()
+                    m = resampled.min()
+                    resampled = (resampled - m) * (1 / (M - m))
+
+                    if scales is None:
+                        scale = 1
+                    else:
+                        scale = scales[index]
+
+                    if axis == 0:
+                        a = np.float32(
+                            resampled[slice_index, :, :].reshape(
+                                (resampled.shape[1], resampled.shape[2])
+                            )
                         )
-                    )
-                elif axis == 1:
-                    a = np.float32(
-                        resampled[:, slice_index, :].reshape(
-                            (resampled.shape[0], resampled.shape[2])
+                    elif axis == 1:
+                        a = np.float32(
+                            resampled[:, slice_index, :].reshape(
+                                (resampled.shape[0], resampled.shape[2])
+                            )
                         )
-                    )
-                else:
-                    a = np.float32(
-                        resampled[:, :, slice_index].reshape(
-                            (resampled.shape[0], resampled.shape[1])
+                    else:
+                        a = np.float32(
+                            resampled[:, :, slice_index].reshape(
+                                (resampled.shape[0], resampled.shape[1])
+                            )
                         )
-                    )
-                lookup_table = volume.get_lookup_table()
-                im = self.__array_to_im(a, lookup_table)
-                sequence.append(im.rotate(90))  # FIXME: make optional
-                n += 1
+
+                    if normalize:
+                        if not global_scale:
+                            if scale is None:
+                                a = a * 255 / (a.max() + 1e-9)
+                            else:
+                                a = a * scale * 255 / (a.max() + 1e-9)
+                        else:
+                            if scale is None:
+                                a = a * 255 / (M + 1e-9)
+                            else:
+                                a = a * scale * 255 / (M + 1e-9)
+
+                    a = self.__crop_img(a, crop)
+
+                    if rgb is None:
+                        rgb = np.zeros((a.shape[0], a.shape[1], 3), dtype=np.uint8)
+                    rgb[:, :, index] = a
+
+                im = Image.fromarray(rgb, mode="RGB")
+
+                if rotate is not None:
+                    im = im.rotate(rotate, expand=True)
+
+                images.append(im)
                 self._progress_bar.set_percentage(
-                    n * 100.0 / (len(self.volumes) * max_size)
+                    slice_index * 100.0 / (n_points[axis])
                 )
-            images.append(sequence)
+
+        else:
+
+            for index in range(len(self.volumes)):
+                volume = self.volumes[index]
+                resampled = volume.compute_resample_on_grid(grid).data
+                self._resampled = resampled
+                sequence = []
+
+                if scales is None:
+                    scale = 1
+                else:
+                    scale = scales[index]
+
+                M = resampled.max()
+                m = resampled.min()
+                resampled = (resampled - m) * (1 / (M - m))
+
+                for slice_index in range(n_points[axis]):
+                    if axis == 0:
+                        a = np.float32(
+                            resampled[slice_index, :, :].reshape(
+                                (resampled.shape[1], resampled.shape[2])
+                            )
+                        )
+                    elif axis == 1:
+                        a = np.float32(
+                            resampled[:, slice_index, :].reshape(
+                                (resampled.shape[0], resampled.shape[2])
+                            )
+                        )
+                    else:
+                        a = np.float32(
+                            resampled[:, :, slice_index].reshape(
+                                (resampled.shape[0], resampled.shape[1])
+                            )
+                        )
+
+                    if normalize:
+                        if not global_scale:
+                            if scale is None:
+                                a = a * 255 / (a.max() + 1e-9)
+                            else:
+                                a = a * scale * 255 / (a.max() + 1e-9)
+                        else:
+                            if scale is None:
+                                a = a * 255 / (M + 1e-9)
+                            else:
+                                a = a * scale * 255 / (M + 1e-9)
+
+                    a = self.__crop_img(a, crop)
+
+                    lookup_table = volume.get_lookup_table()
+                    im = self.__array_to_im(a, lookup_table)
+
+                    if rotate is not None:
+                        im = im.rotate(rotate, expand=True)
+
+                    sequence.append(im)
+                    n += 1
+                    self._progress_bar.set_percentage(
+                        n * 100.0 / (len(self.volumes) * n_points[axis])
+                    )
+                images.append(sequence)
+
         if len(images) == 1:
             return D.display("tipix", images[0], open_browser)
         else:
             return D.display("tipix", images, open_browser)
+
+    def __crop_img(self, image, crop):
+        if crop is not None:
+            [x, y] = np.asarray(image.shape)
+            if x > crop:
+                startx = x // 2 - (crop // 2)
+            else:
+                startx = 0
+            if y > crop:
+                starty = y // 2 - (crop // 2)
+            else:
+                starty = 0
+
+            return image[startx:startx + crop, starty:starty + crop]
+        else:
+            return image
 
     def __array_to_im(self, a, lookup_table):
         if lookup_table is not None:
@@ -816,12 +773,11 @@ class MultipleVolumesNiftyPy:
 
     def _repr_html_(self):
         return self.display()._repr_html_()
-'''
 
 
 #TODO: develop volume renderer based on tomolab.Reconstruction.PET.PET.project_activity
 '''
-        def volume_render(self, volume, scale=1.0):
+        def quick_render(self, volume, scale=1.0):
             # FIXME: use the VolumeRender object in occiput.Visualization (improve it), the following is a quick fix:
             [offsets, locations] = PET_initialize_compression_structure(180, 1, 256, 256)
             if isinstance(volume, np.ndarray):

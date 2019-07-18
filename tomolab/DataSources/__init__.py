@@ -7,7 +7,7 @@
 __all__ = ['uniform_cylinder','uniform_sphere','uniform_spheres_ring','uniform_cylinders_ring','complex_phantom',
            'guess_file_type_by_name',
            'load_nifti',
-           'load_dicom', 'load_dicom_series',
+           'load_dicom', 'load_dicom_series','load_multiple_dicom_series',
            'load_mask', 'load_freesurfer_lut_file',
            'download_Dropbox',
            'load_interfile',
@@ -27,7 +27,7 @@ from .Synthetic.Shapes import uniform_spheres_ring, \
 
 
 from .FileSources import guess_file_type_by_name, load_nifti, \
-                         load_dicom, load_dicom_series, \
+                         load_dicom, load_dicom_series, load_multiple_dicom_series, \
                          load_mask, load_freesurfer_lut_file,\
                          download_Dropbox, load_interfile
 

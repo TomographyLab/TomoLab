@@ -280,8 +280,8 @@ class ImageND(object):
         else:
             self.data = np.asarray([])
         self.ndim = self.data.ndim
-        self.max = self.max()
-        self.min = self.min()
+        self.max_val = self.max()
+        self.min_val = self.min()
         self.shape = self.get_shape()
         self.size = self.get_size()
 
@@ -315,7 +315,7 @@ class ImageND(object):
         return self.header
 
     def get_shape(self):
-        return self.data.shape
+        return np.asarray(self.data.shape)
 
     def get_size(self):
         return self.data.size
@@ -498,6 +498,23 @@ class Image3D(ImageND):
     def volume_render(self, res=(1.0,1.0,1.0), crop=None, autotranspose=True):
         V = VolumeRenderer(self, res=res, crop=crop, autotranspose=autotranspose)
         return V.display()
+
+    def quick_render(self, res=(1.0,1.0,1.0), zoom=1, flip=True):
+        from ..Reconstruction import PET_Static_Scan
+        shape = np.asarray(self.get_shape()*5)
+        size  = np.asarray(shape * res * zoom)
+        pet = PET_Static_Scan()
+        pet.set_activity_shape(shape)
+        pet.set_activity_size(size)
+        pet.set_attenuation_shape(shape)
+        pet.set_attenuation_size(size)
+        tmp = self.copy()
+        if tmp.min() < 0:
+            tmp.data = (tmp.data - tmp.min()) / (tmp.max() - tmp.min())
+        if flip:
+            tmp.data = np.flip(tmp.data,(0,1,2))
+        ideal_prompts = pet.project_activity(tmp)
+        return ideal_prompts.quick_render()
 
     def _repr_html_(self):
         self.display()
