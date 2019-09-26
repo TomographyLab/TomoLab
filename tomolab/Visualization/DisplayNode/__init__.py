@@ -1,19 +1,19 @@
 
-# Display Node - Python and Javascript plotting and data visualisation. 
+# Display Node - Python and Javascript plotting and data visualisation.
 # Stefano Pedemonte
 # Aalto University, School of Science, Helsinki
-# 20 Oct 2013, Helsinki 
+# 20 Oct 2013, Helsinki
 # Harvard University, Martinos Center for Biomedical Imaging
-# Dec 2013, Boston, MA, USA 
+# Dec 2013, Boston, MA, USA
 # Harvard University, Martinos Center for Biomedical Imaging
-# Dec 2014, Boston, MA, USA 
+# Dec 2014, Boston, MA, USA
 
 __all__ = ['DisplayNode','examples','set_ports']
 
-import DisplayNodeProxy
-from DisplayNodeProxy import DisplayNode
-import DisplayNodeServer
-import examples
+from . import DisplayNodeProxy
+from .DisplayNodeProxy import DisplayNode
+from . import DisplayNodeServer
+from . import examples
 
 def set_ports(web,proxy):
     DisplayNodeServer.WEB_PORT = web
