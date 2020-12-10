@@ -10,7 +10,7 @@
 # The simple plugin system handles the compilation of the code.
 
 
-from .PET_projection import PET_Projection,
+from .PET_projection import PET_Projection
 import numpy as np
 
 __all__ = ["Listmode_Loader"]

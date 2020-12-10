@@ -141,6 +141,8 @@ class PET_Static_Scan:
         image = Image3D(data=data, affine=t_pix_to_world, space="world")
         return image
     
+    def copy(self):
+        return copy.deepcopy(self)
     
     ################################################################################
 
@@ -452,10 +454,11 @@ class PET_Static_Scan:
             progress_callback = progress_bar.set_percentage
         else:
             def progress_callback(value):
-                if value == 1.0:
+                pass
+                '''if value == 1.0:
                     print(value, "/", 100)
                 if (np.int32(value) / 10) * 10 == value:
-                    print(value, "/", 100)
+                    print(value, "/", 100)'''
 
         # Load the listmode data
         M = self.scanner.michelogram
@@ -475,7 +478,8 @@ class PET_Static_Scan:
             progress_callback,
         )
         progress_callback(100)
-        print("Done!")
+        if print_debug:
+            print("Done!")
 
         # Load static measurement data
         self._load_static_measurement()
@@ -582,7 +586,7 @@ class PET_Static_Scan:
                 vmin,
                 vmax,
             )
-            if self.prompts is not None:
+            '''if self.prompts is not None:
                 # FIXME: sensitivity loaded from interfile with some
                 # manufacturers has non-zero value
                 # where there are no detectors - set to zero where data is zero
@@ -594,7 +598,7 @@ class PET_Static_Scan:
                     "Warning: If loading real scanner data, please "
                     "load_interfile prompts before loading the sensitivity. \n"
                     "Ignore this message if this is a simulation. \n"
-                    "See the source code for more info. ")
+                    "See the source code for more info. ")'''
         elif filetype == "mat":
             print("Sensitivity from Matlab not yet implemented. "
                   "All is ready, please spend 15 minutes and implement. ")
@@ -1352,7 +1356,7 @@ class PET_Static_Scan:
             randoms = 0.0
         if scatter is None:
             scatter = 0.0
-        if sensitivity is None or sensitivity is 1.0:
+        if sensitivity is None or sensitivity == 1.0:
             att_sens = attenuation
         else:
             att_sens = sensitivity * attenuation
@@ -3272,7 +3276,6 @@ class PET_Cyclic_Scan(PET_Dynamic_Scan):
             progress_bar = ProgressBar()
             progress_callback = progress_bar.set_percentage
         else:
-
             def progress_callback(value):
                 pass
 

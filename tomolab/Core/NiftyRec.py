@@ -34,7 +34,7 @@ __all__ = ['has_NiftyPy',
 library_name = "_et_array_interface"
 niftyrec_lib_paths = [localpath(),filepath(__file__),'./',
                       '/usr/local/niftyrec/lib/',
-                      'C:/Prorgam Files/NiftyRec/lib/']
+                      'C:/Program Files/NiftyRec/lib/']
 
 INTERPOLATION_LINEAR = 0
 INTERPOLATION_POINT = 1

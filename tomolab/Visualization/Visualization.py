@@ -243,6 +243,7 @@ class TriplanarView:
             img = (np.rot90(data_array[tuple(slice_obj)], k=1))
             im = ax.imshow(img, cmap=cmap, clim=clim, interpolation=interp)
             ax.set_title(self.views[ii])
+            plt.colorbar(im, ax=ax)
 
             # add "cross hair"
             guide_positions = [val for jj, val in enumerate(coords)

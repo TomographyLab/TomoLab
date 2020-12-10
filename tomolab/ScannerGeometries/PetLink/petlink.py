@@ -89,7 +89,7 @@ def test_library_petlink32_c():
     return r.output == number
 
 
-def petlink32_info(filename, n_packets):
+def petlink32_info(filename, n_packets=100000000000):
     """Extracts summary information from a listmode binary file. """
     descriptor = [{'name': 'filename', 'type': 'string', 'value': filename, 'size': len(filename)},
                   {'name': 'n_packets', 'type': 'int', 'value': n_packets},

@@ -13,7 +13,7 @@ __all__ = ['DisplayNode','examples','set_ports']
 from . import DisplayNodeProxy
 from .DisplayNodeProxy import DisplayNode
 from . import DisplayNodeServer
-from . import examples
+#from . import examples
 
 def set_ports(web,proxy):
     DisplayNodeServer.WEB_PORT = web

@@ -7,7 +7,7 @@
 
 import nibabel
 from .DataStructures import Image3D, ImageND
-from nipy.io.nifti_ref import nifti2nipy
+#from nipy.io.nifti_ref import nifti2nipy
 import numpy as np
 
 '''

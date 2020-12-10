@@ -14,7 +14,6 @@ from IPython.display import HTML, Javascript, display
 
 __all__ = ['Biograph_mMR_Listmode']
 
-
 ###### IPython integration: ########
 LIGHT_BLUE   = 'rgb(200,228,246)'
 BLUE         = 'rgb(47,128,246)'
@@ -22,8 +21,6 @@ LIGHT_RED    = 'rgb(246,228,200)'
 RED          = 'rgb(246,128,47)'
 LIGHT_GRAY   = 'rgb(246,246,246)'
 GRAY         = 'rgb(200,200,200)'
-
-
 
 
 class ProgressBar():
@@ -136,7 +133,7 @@ def petlink32_to_dynamic_projection_mMR(filename,n_packets,n_radial_bins,n_angle
                     {'name':'n_angles',               'type':'uint',    'value':n_angles                 },
                     {'name':'n_sinograms',            'type':'uint',    'value':n_sinograms              },
                     {'name':'n_time_bins',            'type':'uint',    'value':len(time_bins)-1         },
-                    {'name':'time_bins',              'type':'array',   'value':np.int32(time_bins)         },
+                    {'name':'time_bins',              'type':'array',   'value':np.int32(time_bins)      },
                     {'name':'n_axial',                'type':'uint',    'value':n_axial                  },
                     {'name':'n_azimuthal',            'type':'uint',    'value':n_azimuthal              },
                     {'name':'angles_axial',           'type':'array',   'value':angles_axial             },
@@ -575,4 +572,4 @@ class Biograph_mMR_Listmode():
     #def __del__(self):
     def free_memory(self):
         free_memory()
-        print("mMR Listmode data structures deallocated.")
+        #print("mMR Listmode data structures deallocated.")

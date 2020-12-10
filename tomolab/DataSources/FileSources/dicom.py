@@ -32,7 +32,9 @@ from .nifti import load_nifti
 # cannot be contrainted in the limited ammisible range
 # of int16. Moreover, there's no point in unsing integer
 # values for emission data
-#-----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
+
 def override_dcmstack_get_data(self):
     import numpy as np
     '''Get an array of the voxel values.
@@ -79,6 +81,7 @@ def override_dcmstack_get_data(self):
 
     return vox_array
 
+
 if dcmstack_available:
     dcmstack.DicomStack.get_data = override_dcmstack_get_data
 ##############################################################################
@@ -95,6 +98,7 @@ def load_dicom(search_path):
     except:
         return None
 
+
 def load_dicom_series(path):
     return load_dicom(path)
 
@@ -103,10 +107,10 @@ def load_multiple_dicom_series(dirlist=[]):
     dataset = {}
     progress_bar = ProgressBar(title='Reading src', color=C.LIGHT_RED)
     progress_bar.set_percentage(0.1)
-    for k,directory in enumerate(dirlist):
+    for k, directory in enumerate(dirlist):
         print(directory)
         vol = load_dicom(directory)
-        if not vol==[]:
+        if not vol == []:
             keys = directory.split('/')
             if keys[-2] in dataset.keys():
                 dataset[keys[-2]][keys[-1]] = vol
@@ -182,5 +186,3 @@ def load_dicom_series_old(path, files_start_with=None, files_end_with=None,
         array[:, :, i] = slice
         # return numpy2occiput(array)
     return array
-
-

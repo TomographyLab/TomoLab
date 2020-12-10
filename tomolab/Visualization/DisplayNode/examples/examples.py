@@ -60,10 +60,10 @@ def display_image_example():
     N_tiles  = 6
     max_iter = 6
     d = DisplayNode() 
-    print "Wait, generating awesome images .. "
+    print("Wait, generating awesome images .. ")
     image = Image.new("RGB",(N*N_tiles,N))
     for i in range(N_tiles): 
-        print "%d / %d "%(i+1,N_tiles)
+        print("%d / %d "%(i+1,N_tiles))
         tile = polygon_fractal(n=i+3,imgx=N,imgy=N,maxIt=max_iter)
         image.paste(tile,(i*N,0))
     d.display_in_browser('image',image)
@@ -100,4 +100,4 @@ if __name__ == "__main__":
     display_graph() 
     display_image() 
     display_cubes() 
-    print "Open examples.py to find out how to integrate DisplayNode with Ipython Notebook (see the definition of ExampleObjectThatHasGraphicalRepresentation). "
+    print("Open examples.py to find out how to integrate DisplayNode with Ipython Notebook (see the definition of ExampleObjectThatHasGraphicalRepresentation). ")
