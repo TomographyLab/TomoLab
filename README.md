@@ -29,8 +29,10 @@ We provide a (devlopment) Docker Image, build to natively support ~~current~~ ve
 ## Getting started
 
 > ***IMPORTANT***
+> 
 > In order to correctly load and use `TomoLab` you need to compile [`NiftyRec`](https://github.com/TomographyLab/NiftyRec). 
-> Please, follow the instructinos provided in the repo to do that.
+> Please, follow the instructions provided in the repo to do that.
+> 
 > Once you are done compiling `NiftyRec`, you need to add it to your path, so that `TomoLab` is able to find it when it's imported.
 > There are many ways you can do this, here's my suggestion:
 > - Open the file `~/.bashrc` in your favorite text editor
