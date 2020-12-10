@@ -15,15 +15,27 @@ The software provides high-speed reconstruction using Graphics Processing Units 
 The source code contains Jupyter notebooks with examples.
 
 ## Installation
-Given the early stage of this project, no installation instruction are currently available, as a lot of the code originally written for Python 2.7 still needs to be ported to Python 3.x
-
-If you want to try out `TomoLab` while it is being developed, we provide a (devlopment) Docker Image, build to natively support current version of `TomoLab`. For more information about this, please refer to [*TomographyLab/DockerImage*](https://github.com/TomographyLab/DockerImage).
-
-If, instead, you would like to install `TomoLab` directly in your system, you can (for the time being) have a look at this [DockerFile](https://github.com/TomographyLab/DockerImage/blob/master/config/occiput.Dockerfile) to see what the main dependencies are.
+- Clone this repo wherever you like on your workstation
+- Open a terminal window and `cd` to the main directory of the package (i.e. you should see the setup.py file from using `ls`)
+- [*optional but recommended*] Activate the virtual environment in which you plan to install `TomoLab`
+- Execute `pip install . ` (this will install the local version of the repo using `pip`, as this package is not yet available on the online server of PyPI)
 
 If you have troubles with any of these steps, please just open an Issue here and we will try to sort it out.
 
+[outdated]
+We provide a (devlopment) Docker Image, build to natively support ~~current~~ version of `TomoLab`. For more information about this, please refer to [*TomographyLab/DockerImage*](https://github.com/TomographyLab/DockerImage).
+
+
 ## Getting started
+
+> ***IMPORTANT***
+> In order to correctly load and use `TomoLab` you need to compile [`NiftyRec`](https://github.com/TomographyLab/NiftyRec). 
+> Please, follow the instructinos provided in the repo to do that.
+> Once you are done compiling `NiftyRec`, you need to add it to your path, so that `TomoLab` is able to find it when it's imported.
+> There are many ways you can do this, here's my suggestion:
+> - Open the file `~/.bashrc` in your favorite text editor
+> - Add this line at the end of the file: `export LD_LIBRARY_PATH=<path_to_compiled_NiftyRec>/lib:${LD_LIBRARY_PATH}`
+> - Start a new terminal session to load and use the edited `~/.bashrc` file
 
 Examples and demos of the features of `TomoLab` are in the `/tomolab/Examples` folder.
 A better documentation, and instruction about the best order in which you can study those notebooks will come (hopefully) very soon.
@@ -41,7 +53,7 @@ For more information check out our [website](http://tomographylab.scienceonthewe
   - [x] integrating major (`Occiput.io`'s) dependencies within the main `TomoLab` project
   - [x] switching to relative imports throughout the code
   - [ ] consistently following PEP8 style rules
-  - [ ] choosing a naming convention for modules, classes and variable (in therm of Captialization, usage of underscores, and so on) and keeping it consistent
+  - [x] choosing a naming convention for modules, classes and variable (in therm of Captialization, usage of underscores, and so on) and keeping it consistent
 
 
 - **Simulation**
